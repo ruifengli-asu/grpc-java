@@ -1,11 +1,71 @@
 import addressbook_pb2
+import sys
 
-person = addressbook_pb2.Person()
-person.id = int(input("Enter person ID number: "))
-person.name = "Ruifeng Li"
-person.email = "li.rui.ce@gmail.com"
-phone = person.phones.add()
-phone.number = "4805168116"
-phone.type = addressbook_pb2.Person.HOME
+def PromptForAddress(person):
+  person.id = int(raw_input("Enter person ID number: "))
+  person.name = raw_input("Enter name: ")
 
-print str(person.id)
+  email = raw_input("Enter email address (blank for none): ")
+  if email != "":
+    person.email = email
+
+  while True:
+    number = raw_input("Enter a phone number (or leave blank to finish): ")
+    if number == "":
+      break
+
+    phone_number = person.phones.add()
+    phone_number.number = number
+
+    type = raw_input("Choose your phone type: mobile, home, work ")
+    if type == "mobile":
+      phone_number.type = addressbook_pb2.Person.MOBILE
+    elif type == "home":
+      phone_number.type = addressbook_pb2.Person.HOME
+    elif type == "work":
+      phone_number.type = addressbook_pb2.Person.WORK
+    else:
+      print("Unknown phone type; leaving as default value.")
+
+# Main procedure:  Reads the entire address book from a file,
+#   adds one person based on user input, then writes it back out to the same
+#   file.
+if len(sys.argv) != 2:
+	print("Usage:", sys.argv[0], "ADDRESS_BOOK_FILE")
+	sys.exit(-1)
+
+address_book = addressbook_pb2.AddressBook()
+
+# Read the existing address book.
+try:
+  with open(sys.argv[1], "rb") as file:
+  	address_book.ParseFromString(file.read())
+except IOError:
+  print(sys.argv[1] + ": File not found.")
+
+# Add an address.
+PromptForAddress(address_book.people.add())
+
+#Write the new address book back to the file
+with open(sys.argv[1], "wb") as file:
+  file.write(address_book.SerializeToString())
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
